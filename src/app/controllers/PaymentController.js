@@ -36,17 +36,17 @@ const payCOD = async(req, res, next) => {
         address: req.body.address,
         note: req.body.note,
         items: [{
-            $push: {
-                sku: req.body.sku,
-                qty: req.body.qty,
-                price: req.body.price,
-            },
+            // $push: {
+            sku: req.body.sku,
+            qty: req.body.qty,
+            price: req.body.price,
+            // },
         }],
     });
     try {
-        // await order.save();
-        res.json(order)
-            // res.redirect('/payment/' + order.id + '/order');
+        await order.save();
+        console.log(order)
+        res.redirect('/payment/' + order.id + '/order');
     } catch (err) {
         res.status(400).send(err);
     }
@@ -54,9 +54,9 @@ const payCOD = async(req, res, next) => {
 
 // [GET] /payment/:id/order
 const showOrder = async(req, res, next) => {
-    // const payment = await Payment.findById(req.params.id);
-    // // console.log(payment);
-    // res.render('TabOrder/order', { layout: 'mainEmpty.hbs', payment: mongooseToObject(payment) });
+    const order = await Order.findById(req.params.id);
+    // console.log(payment);
+    res.render('TabOrder/order', { layout: 'mainEmpty.hbs', order: mongooseToObject(order) });
 }
 
 // [POST] /payment/:id/payOrder
@@ -88,7 +88,8 @@ const payOrder = async(req, res, next) => {
         .digest('hex');
     console.log("--------------------SIGNATURE----------------")
     console.log(signature)
-        //json object send to MoMo endpoint
+
+    //json object send to MoMo endpoint
     const requestBody = JSON.stringify({
         partnerCode: partnerCode,
         accessKey: accessKey,
@@ -106,50 +107,38 @@ const payOrder = async(req, res, next) => {
     //Create the HTTPS objects
     const https = require('https');
     const options = {
-        hostname: 'test-payment.momo.vn',
-        port: 443,
-        path: '/v2/gateway/api/create',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(requestBody)
+            hostname: 'test-payment.momo.vn',
+            port: 443,
+            path: '/v2/gateway/api/create',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestBody)
+            }
         }
-    }
+        //Send the request and get the response
+    const req1 = https.request(options, res => {
+        console.log(`Status: ${res.statusCode}`);
+        console.log(`Headers: ${JSON.stringify(res.headers)}`);
+        res.setEncoding('utf8');
+        res.on('data', (body) => {
+            console.log('Body: ');
+            console.log(body);
+            console.log('payUrl: ');
+            console.log(JSON.parse(body).payUrl);
+        });
+        res.on('end', () => {
+            console.log('No more data in response.');
+        });
+    })
 
-    const req2 = () => {
-            return new Promise((resolve, reject) => {
-                //Send the request and get the response
-                let req1 = https.request(options, res => {
-                    // console.log(`Status: ${res.statusCode}`);
-                    // console.log(`Headers: ${JSON.stringify(res.headers)}`);
-                    res.setEncoding('utf8');
-                    let str;
-                    res.on('data', (body) => {
-                        console.log('Body: ');
-                        console.log('cc', body);
-                        console.log('payUrl: ');
-                        console.log(JSON.parse(body).payUrl);
-                        str = JSON.parse(body).payUrl;
-                        string = JSON.stringify(str);
-                        // console.log('string', string)
-                    });
-                    res.on('end', (body) => {
-                        console.log('No more data in response.');
-                    });
-                    // console.log(str);
-                });
-                req1.write(requestBody);
-                req1.end(
-                    res.redirect('/product')
-                );
-                // req1.on('error', (e) => {
-                //     console.log(`problem with request: ${e.message}`);
-                // });
-                // // write data to request body
-                // console.log("Sending....")
-            })
-        }
-        // req2().then((str) => { console.log('cc1', str); }).catch(console.log);
+    req1.on('error', (e) => {
+        console.log(`problem with request: ${e.message}`);
+    });
+    // write data to request body
+    console.log("Sending....")
+    req1.write(requestBody);
+    req1.end();
 }
 
 module.exports = { showPayment, payCOD, showOrder, payOrder }
