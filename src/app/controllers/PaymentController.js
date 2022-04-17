@@ -36,13 +36,17 @@ const payCOD = async(req, res, next) => {
         address: req.body.address,
         note: req.body.note,
         items: [{
-            // $push: {
-            sku: req.body.sku,
-            qty: req.body.qty,
-            price: req.body.price,
-            // },
+            $push: {
+                sku: req.body.sku,
+                qty: req.body.qty,
+                price: req.body.price,
+            },
         }],
     });
+    for (var i in req.body.sku) {
+        order.items.push({ sku: req.body.sku[i], qty: req.body.qty[i], price: req.body.price[i] })
+    }
+
     try {
         await order.save();
         console.log(order)
@@ -55,7 +59,6 @@ const payCOD = async(req, res, next) => {
 // [GET] /payment/:id/order
 const showOrder = async(req, res, next) => {
     const order = await Order.findById(req.params.id);
-    // console.log(payment);
     res.render('TabOrder/order', { layout: 'mainEmpty.hbs', order: mongooseToObject(order) });
 }
 
@@ -118,27 +121,39 @@ const payOrder = async(req, res, next) => {
         }
         //Send the request and get the response
     const req1 = https.request(options, res => {
-        console.log(`Status: ${res.statusCode}`);
-        console.log(`Headers: ${JSON.stringify(res.headers)}`);
+        // console.log(`Status: ${res.statusCode}`);
+        // console.log(`Headers: ${JSON.stringify(res.headers)}`);
         res.setEncoding('utf8');
+        let data = '';
         res.on('data', (body) => {
-            console.log('Body: ');
-            console.log(body);
-            console.log('payUrl: ');
-            console.log(JSON.parse(body).payUrl);
+            data += body;
+            // console.log('Body: ');
+            // console.log(body);
+            // console.log('payUrl: ');
+            // console.log(JSON.parse(body).payUrl);
         });
+
         res.on('end', () => {
-            console.log('No more data in response.');
+            try {
+                const parsedData = JSON.parse(data);
+                // console.log(parsedData);
+                next(parsedData.payUrl);
+                console.log('No more data in response.');
+            } catch (e) {
+                console.error(e.message);
+            }
         });
     })
 
-    req1.on('error', (e) => {
-        console.log(`problem with request: ${e.message}`);
-    });
+    // req1.on('error', (e) => {
+    //     console.log(`problem with request: ${e.message}`);
+    // });
     // write data to request body
-    console.log("Sending....")
-    req1.write(requestBody);
+    // console.log("Sending....")
+    req1.write(JSON.stringify(requestBody));
     req1.end();
+
+    res.redirect('/payment/' + req.params.id + '/order');
 }
 
 module.exports = { showPayment, payCOD, showOrder, payOrder }
