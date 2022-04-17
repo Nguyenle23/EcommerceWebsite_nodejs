@@ -24,12 +24,12 @@ const payCOD = async(req, res, next) => {
         return res.redirect('/payment');
     }
 
-    let product = await Product.findOne(req.params.id)
-    for (var i = 0; i < product.skus.length; i++) {
-        if (req.body.sku == product.skus[i].sku) {
-            req.body.sku.push(product.skus[i].sku);
-        }
-    }
+    // let product = await Product.findOne(req.params.id)
+    // for (var i = 0; i < product.skus.length; i++) {
+    //     if (req.body.sku == product.skus[i].sku) {
+    //         req.body.sku.push(product.skus[i].sku);
+    //     }
+    // }
     const order = new Order({
         name: req.body.name,
         phonenumber: req.body.phonenumber,
@@ -121,16 +121,16 @@ const payOrder = async(req, res, next) => {
         }
         //Send the request and get the response
     const req1 = https.request(options, res => {
-        // console.log(`Status: ${res.statusCode}`);
-        // console.log(`Headers: ${JSON.stringify(res.headers)}`);
+        console.log(`Status: ${res.statusCode}`);
+        console.log(`Headers: ${JSON.stringify(res.headers)}`);
         res.setEncoding('utf8');
         let data = '';
         res.on('data', (body) => {
             data += body;
-            // console.log('Body: ');
-            // console.log(body);
-            // console.log('payUrl: ');
-            // console.log(JSON.parse(body).payUrl);
+            console.log('Body: ');
+            console.log(body);
+            console.log('payUrl: ');
+            console.log(JSON.parse(body).payUrl);
         });
 
         res.on('end', () => {
