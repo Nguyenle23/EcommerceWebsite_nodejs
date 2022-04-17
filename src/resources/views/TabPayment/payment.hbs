@@ -86,11 +86,13 @@
             </tr>
             <tr>
                <td class="text-left">PHÍ VẬN CHUYỂN:</td>
-               <td class="text-right">FREESHIP</td>
+               {{!-- <td class="text-right">FREESHIP</td> --}}
+               <td class="text-right js-shipping-fee">30,000đ</td>
             </tr>
             <tr>
                <td class="text-left">TỔNG TIỀN:</td>
-               <td class="text-right">200,000đ</td>
+               {{!-- <td class="text-right">200,000đ</td> --}}
+               <td class="text-right js-order-total">0đ</td>
             </tr>
          </tbody>
       </table>
@@ -105,7 +107,7 @@
 
    if (JSON.parse(localStorage.getItem('items')) === null || JSON.parse(localStorage.getItem('items')) == '') {
       cartData += `<tr class="cart-item cart-item-empty"><td>Chưa có sản phẩm trong giỏ hàng</td></tr>`
-      document.querySelector('.cart-total-price').innerHTML = '2' + 'đ';
+      document.querySelector('.cart-total-price').innerHTML = '0' + 'đ';
    }
    else {
       (JSON.parse(localStorage.getItem('items')).map(data => {
@@ -145,8 +147,22 @@
          document.getElementsByClassName('cart-total-price')[0].innerHTML = Intl.NumberFormat().format(total) + 'đ';
       }))
    }
-
    cartView.innerHTML = cartData;
 </script>
 
+{{!-- Calculate order total --}}
+<script>
+   var orderTotal = document.querySelector('.js-order-total')
+   var itemsTotal = document.querySelector('#cart-total-price').innerText
+   var shippingTotal = document.querySelector('.js-shipping-fee').innerText
+   itemsTotal = itemsTotal.replaceAll(',', '')
+   itemsTotal = itemsTotal.replaceAll('đ', '')
+   shippingTotal = shippingTotal.replaceAll(',', '')
+   shippingTotal = shippingTotal.replaceAll('đ', '')
+   
+   var total = 0;
+   total = parseFloat(itemsTotal) + parseFloat(shippingTotal);
+   console.log(total)
+   orderTotal.innerHTML = Intl.NumberFormat().format(total) + 'đ'
+</script>
 <!-- End content -->
