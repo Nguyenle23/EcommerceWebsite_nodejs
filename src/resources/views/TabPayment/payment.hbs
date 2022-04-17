@@ -86,11 +86,11 @@
             </tr>
             <tr>
                <td class="text-left">PHÍ VẬN CHUYỂN:</td>
-               <td class="text-right">FREESHIP</td>
+               <td class="text-right js-shipping-fee">30,000đ</td>
             </tr>
             <tr>
                <td class="text-left">TỔNG TIỀN:</td>
-               <td class="text-right">200,000đ</td>
+               <td class="text-right js-order-total">0đ</td>
             </tr>
          </tbody>
       </table>
@@ -99,6 +99,7 @@
 </form>
 </div>
 
+{{!-- Show order items --}}
 <script>
    var cartView = document.getElementsByClassName('cart-view')[0]
    let cartData = ``;
@@ -147,6 +148,22 @@
    }
 
    cartView.innerHTML = cartData;
+</script>
+
+{{!-- Calculate order total --}}
+<script>
+   var orderTotal = document.querySelector('.js-order-total')
+   var itemsTotal = document.querySelector('#cart-total-price').innerText
+   var shippingTotal = document.querySelector('.js-shipping-fee').innerText
+   itemsTotal = itemsTotal.replaceAll(',', '')
+   itemsTotal = itemsTotal.replaceAll('đ', '')
+   shippingTotal = shippingTotal.replaceAll(',', '')
+   shippingTotal = shippingTotal.replaceAll('đ', '')
+   
+   var total = 0;
+   total = parseFloat(itemsTotal) + parseFloat(shippingTotal);
+   console.log(total)
+   orderTotal.innerHTML = Intl.NumberFormat().format(total) + 'đ'
 </script>
 
 <!-- End content -->

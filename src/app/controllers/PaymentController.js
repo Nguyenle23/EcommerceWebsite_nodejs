@@ -24,29 +24,23 @@ const payCOD = async(req, res, next) => {
         return res.redirect('/payment');
     }
 
-    let product = await Product.findOne(req.params.id)
-    for (var i = 0; i < product.skus.length; i++) {
-        if (req.body.sku == product.skus[i].sku) {
-            req.body.sku.push(product.skus[i].sku);
-        }
-    }
     const order = new Order({
         name: req.body.name,
         phonenumber: req.body.phonenumber,
         address: req.body.address,
         note: req.body.note,
-        items: [{
-            $push: {
-                sku: req.body.sku,
-                qty: req.body.qty,
-                price: req.body.price,
-            },
-        }],
+        items: []
     });
+
+    for(var i in req.body.sku) {
+        order.items.push({sku: req.body.sku[i], qty: req.body.qty[i], price: req.body.price[i]})
+    }
+   
+    res.json(order)
+
     try {
         // await order.save();
-        res.json(order)
-            // res.redirect('/payment/' + order.id + '/order');
+        // res.redirect('/payment/' + order.id + '/order');
     } catch (err) {
         res.status(400).send(err);
     }
